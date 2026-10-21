@@ -1,0 +1,28 @@
+name: upstream-drift
+
+on:
+  schedule:
+    # Mondays, 06:17 UTC.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Exit 1 means drift, which the next step turns into issues; only 2 is an error.
+      - name: Check upstream drift
+        run: |
+          status=0
+          scripts/upstream-drift.sh --json >drift.json || status=$?
+          jq -r '.[] | "\(.status)\t\(.skill)"' drift.json
+          [ "$status" -le 1 ]
+      - name: Keep one needs-triage issue per drifted skill
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/drift-issues.sh drift.json
