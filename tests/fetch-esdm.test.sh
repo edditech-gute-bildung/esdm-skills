@@ -47,4 +47,16 @@ printf 'version: 9.9.9\n' >"$repo/.esdm-version"
 check_fails "refuses a pin without this host's os-arch" fetch "$repo"
 check "names the missing os-arch" grep -q "no SHA256 for $os_arch" "$repo/out.log"
 
+# ESDM_PIN and ESDM_INSTALL_DIR point the script at another pin and install
+# directory, as setup's PATH install runs it from the skill folder.
+repo="$(new_repo "$good_sha")"
+mkdir -p "$work/elsewhere" "$work/bin"
+mv "$repo/.esdm-version" "$work/elsewhere/.esdm-version"
+fetch_to_bin() {
+  ESDM_PIN="$work/elsewhere/.esdm-version" ESDM_INSTALL_DIR="$work/bin" fetch "$1"
+}
+check "fetches with the pin and install directory given" fetch_to_bin "$repo"
+check "installs a runnable esdm in the install directory" test "$("$work/bin/esdm" 2>/dev/null)" = "esdm 9.9.9"
+check "leaves no .tools behind" test ! -e "$repo/.tools"
+
 finish

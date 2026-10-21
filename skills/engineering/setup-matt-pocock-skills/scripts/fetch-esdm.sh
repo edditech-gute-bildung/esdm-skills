@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Fetch the esdm binary pinned in .esdm-version into .tools/esdm.
+# Fetch the esdm binary pinned in .esdm-version into .tools/esdm, or wherever
+# ESDM_PIN and ESDM_INSTALL_DIR say.
 # Lives at scripts/fetch-esdm.sh; the repo root is the script's parent directory.
 #
 # .esdm-version holds the version and one SHA256 per os-arch:
@@ -9,13 +10,14 @@
 #   linux-amd64: <sha256>
 #   ...
 #
-# The download is verified against the pin before it lands in .tools/esdm.
-# ESDM_DOWNLOAD_BASE overrides where releases are downloaded from.
+# The download is verified against the pin before it is installed.
+# ESDM_DOWNLOAD_BASE overrides where releases are downloaded from, ESDM_PIN which
+# pin is read, and ESDM_INSTALL_DIR where esdm lands.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-pin="$root/.esdm-version"
-tools="$root/.tools"
+pin="${ESDM_PIN:-$root/.esdm-version}"
+install_dir="${ESDM_INSTALL_DIR:-$root/.tools}"
 base="${ESDM_DOWNLOAD_BASE:-https://github.com/thenativeweb/esdm/releases/download}"
 
 die() {
@@ -23,9 +25,9 @@ die() {
   exit 1
 }
 
-[ -f "$pin" ] || die "no .esdm-version at $root"
+[ -f "$pin" ] || die "no pin at $pin"
 
-# pinned <key>: the value of "<key>: <value>" in .esdm-version.
+# pinned <key>: the value of "<key>: <value>" in the pin.
 pinned() {
   awk -v key="$1" 'index($0, key ":") == 1 { sub(/^[^:]*: */, ""); print; exit }' "$pin"
 }
@@ -54,8 +56,8 @@ sha256() {
   fi
 }
 
-mkdir -p "$tools"
-download="$(mktemp "$tools/esdm.download.XXXXXX")"
+mkdir -p "$install_dir"
+download="$(mktemp "$install_dir/esdm.download.XXXXXX")"
 trap 'rm -f "$download"' EXIT
 
 url="$base/v$version/esdm-$os-$arch"
@@ -71,5 +73,5 @@ chmod +x "$download"
 if [ "$os" = darwin ]; then
   xattr -d com.apple.quarantine "$download" 2>/dev/null || true
 fi
-mv "$download" "$tools/esdm"
-echo "fetch-esdm: installed $tools/esdm"
+mv "$download" "$install_dir/esdm"
+echo "fetch-esdm: installed $install_dir/esdm"

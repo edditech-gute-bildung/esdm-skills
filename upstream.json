@@ -31,6 +31,11 @@
           "to": "4. **Grill (if needed).** If the request needs fleshing out, call the Skill tool twice, for \"grilling\" and \"domain-modeling\", and grill it into shape a round of questions at a time, sharpening domain terms and updating the ESDM model (via domain-modeling) and ADRs inline as decisions land."
         }
       ]
+    },
+    "setup-matt-pocock-skills": {
+      "tier": "rewrite",
+      "skillPath": "skills/engineering/setup-matt-pocock-skills",
+      "base": "5beb35b040e3de97e54fa9e386d7e42d15c295c2"
     }
   }
 }
