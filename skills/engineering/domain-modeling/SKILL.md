@@ -14,7 +14,7 @@ The ESDM model is the single source of truth for domain language. `docs/agents/d
 The first time this skill engages in a session, whether the conversation opens with it or another skill reaches it midway:
 
 1. **Get your bearings.** Run `esdm view -d <model dir> --with-details` for the shape, and `esdm glossary -d <model dir> <domain>/<bc>` for the language of the context you're in.
-2. **Offer a Domain Story, once.** Before writing anything, ask whether the user wants to tell a Domain Story. If the Domain already has stories, list them by name and `pointInTime` and offer: a new story, a `to-be` story against an existing `as-is` one, or skip. On yes, follow [DOMAIN-STORY-WRITING.md](./DOMAIN-STORY-WRITING.md). A skip holds for the rest of the session: tell a story later only when the user asks for one.
+2. **Offer a Domain Story, once.** Before writing anything, ask whether the user wants to tell a Domain Story. If the Domain already has stories, list them by name and `pointInTime` from the `esdm view` output and offer: a new story, a `to-be` story against an existing `as-is` one, or skip. On yes, follow [DOMAIN-STORY-WRITING.md](./DOMAIN-STORY-WRITING.md). A skip holds for the rest of the session: tell a story later only when the user asks for one.
 
 ## During the session
 

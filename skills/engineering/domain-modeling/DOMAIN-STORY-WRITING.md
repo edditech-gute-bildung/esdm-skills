@@ -44,7 +44,6 @@ The activity is the first edge's `label`. When the work object goes on to an act
 
 - Names are the user's words, kebab-cased: `Due Date Slip` → `due-date-slip`.
 - Declare an Actor in `actors[]` or a Work Object in the Sentence's `workObjects[]` only when it carries an annotation or groups; otherwise the edge names it directly.
-- Two Sentences with the same `sequenceNumber` happen in parallel.
 
 **Check the vocabulary** of every Actor and Work Object against the Domain's ubiquitous language and its `avoid[]` lists. Lint doesn't connect story names to the core model, so you do:
 
@@ -61,7 +60,7 @@ Once the story is complete, offer a **graduation** pass. It is a separate pass, 
    - story Actors → `actor` documents
    - activities → Commands, plus the Events they cause
    - Work Objects → terms, or structural elements (Aggregate, Entity, Value Object)
-2. Run each candidate through _sharpen fuzzy kinds_. Ask for every required field with no neutral value; never make one up.
+2. Run each candidate through _sharpen fuzzy kinds_.
 3. Write it following [ESDM-WRITING.md](./ESDM-WRITING.md), through the lint gate.
 4. Add the element's `esdm:` reference to the story's `metadata.annotations.graduated-to`, comma-separated, e.g. `esdm:domain=library/bounded-context=lending/aggregate=copy`. Run the lint gate again.
 
