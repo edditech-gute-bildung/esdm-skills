@@ -11,7 +11,7 @@ The ESDM model is the single source of truth for domain language. `docs/agents/d
 
 ## First engagement
 
-The first time this skill engages in a session, whether the conversation opens with it or another skill reaches it midway, **get your bearings**: run `esdm view -d <model dir>` for the shape, and `esdm glossary -d <model dir> <domain>/<bc>` for the language of the context you're in.
+The first time this skill engages in a session, whether the conversation opens with it or another skill reaches it midway, **get your bearings**: run `esdm view -d <model dir> --with-details` for the shape, and `esdm glossary -d <model dir> <domain>/<bc>` for the language of the context you're in.
 
 ## During the session
 
