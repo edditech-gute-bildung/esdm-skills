@@ -1,0 +1,31 @@
+{
+  "upstream": "https://github.com/mattpocock/skills",
+  "skills": {
+    "grill-with-docs": {
+      "tier": "patch",
+      "skillPath": "skills/engineering/grill-with-docs",
+      "base": "5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "edits": [
+        {
+          "file": "SKILL.md",
+          "line": 3,
+          "from": "description: A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go.",
+          "to": "description: A relentless interview to sharpen a plan or design, which also creates the ESDM model and ADRs as we go."
+        }
+      ]
+    },
+    "triage": {
+      "tier": "patch",
+      "skillPath": "skills/engineering/triage",
+      "base": "5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "edits": [
+        {
+          "file": "SKILL.md",
+          "line": 76,
+          "from": "4. **Grill (if needed).** If the request needs fleshing out, call the Skill tool twice, for \"grilling\" and \"domain-modeling\", and grill it into shape a round of questions at a time, sharpening domain terms and updating `GLOSSARY.md`/ADRs inline as decisions land.",
+          "to": "4. **Grill (if needed).** If the request needs fleshing out, call the Skill tool twice, for \"grilling\" and \"domain-modeling\", and grill it into shape a round of questions at a time, sharpening domain terms and updating the ESDM model (via domain-modeling) and ADRs inline as decisions land."
+        }
+      ]
+    }
+  }
+}

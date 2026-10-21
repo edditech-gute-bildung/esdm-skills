@@ -1,0 +1,15 @@
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Includes the patch-tier check against the real upstream.
+      - name: Tests
+        run: tests/run.sh
