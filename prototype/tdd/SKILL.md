@@ -7,7 +7,31 @@ description: Test-driven development. Use when the user wants to build features 
 
 TDD is the red → green loop. This skill is the reference that makes that loop produce tests worth keeping: what a good test is, where tests go, the anti-patterns, and the rules of the loop. Every section applies on every cycle: consult them before and during the loop, not after.
 
-When exploring the codebase, read `GLOSSARY.md` (if it exists) so test names and interface vocabulary match the project's domain language, and respect ADRs in the area you're touching.
+<!-- PROTOTYPE for "How should GWT-WRITING.md read?" (#12). Upstream tdd plus the Scenario sections. Throwaway. -->
+
+When exploring the codebase, read `GLOSSARY.md` so test names and interface vocabulary match the project's domain language, and respect ADRs in the area you're touching. `GLOSSARY.md` is generated from the ESDM model in the dir `docs/agents/domain.md` names; the model is what you change.
+
+## Scenarios: the agreed slices
+
+When the unit you're building has a Given-When-Then Feature (`esdm view -d <model dir> --with-details` lists them under their unit), its Scenarios drive the loop.
+
+**At the start,** list the unit's Scenarios and mark the ones that already have a test (search for their `esdm:` comment). The untested ones are the slice list, in Feature order. The user can reorder or skip.
+
+**One Scenario is one red → green slice,** at the seam its variant fixes. Scenarios are already agreed seams; a test at any other seam still needs confirming, as below.
+
+| Variant | Seam | Arrange (given) | Act (when) | Assert (then) |
+|---|---|---|---|---|
+| Aggregate / DCB | Command handling | past Events | the Command | the Events, or the rejection's invariant |
+| Process Manager | Reaction | past Events | the Event or Timer | emitted Commands, timers, state, ended |
+| Read Model | Projection + Query | project the Events | the Query | the result |
+
+- Expected values come **straight from the Scenario**. It is the independent source of truth the anti-patterns below ask for.
+- The **test name** is the Scenario `name`, word for word. The line above the test carries the Feature's reference and the Scenario name:
+  `// esdm:domain=library/bounded-context=lending/aggregate=reader-account/feature=borrow-book scenario=reader-with-five-loans-is-refused-a-sixth`
+
+**A gap:** when you meet behaviour no Scenario covers, stop and propose the Scenario (given, when, then, with the values you'd assert). Call the Skill tool with "domain-modeling" to write it once the user confirms, then carry on with it as the next slice. If the user declines, test it at a confirmed seam as below.
+
+**When the code and a Scenario disagree,** the Scenario wins: fix the code. If the user decides the Scenario is wrong, it changes first, through "domain-modeling"; then update the test from the changed Scenario. A test never drifts from its Scenario.
 
 ## What a good test is
 
