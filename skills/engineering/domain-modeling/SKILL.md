@@ -1,6 +1,6 @@
 ---
 name: domain-modeling
-description: Build and sharpen a project's ESDM domain model. Use when discussing domain terminology, writing or editing `*.esdm.yaml` model files, or recording or editing an ADR.
+description: Build and sharpen a project's ESDM domain model. Use when discussing domain terminology, writing or editing `*.esdm.yaml` model files or Given-When-Then Scenarios, or recording or editing an ADR.
 ---
 
 # Domain Modeling
@@ -31,6 +31,8 @@ When a concept could be modeled as more than one kind (Aggregate or Dynamic Cons
 
 When domain relationships are being discussed, stress-test them with specific scenarios. Invent scenarios that probe edge cases and force the user to be precise about the boundaries between concepts.
 
+A probe that settles how a unit behaves is a candidate Scenario: see _pin behaviour with Scenarios_.
+
 ### Cross-reference with code
 
 When the user states how something works, check whether the code agrees with them and with the model's commands, events and invariants. Surface any contradiction.
@@ -39,9 +41,13 @@ When the user states how something works, check whether the code agrees with the
 
 When a term's meaning or an element's shape is settled, write it right there, following [ESDM-WRITING.md](./ESDM-WRITING.md). Capture as it happens, one write at a time.
 
+### Pin behaviour with Scenarios
+
+When an invariant or Command is settled on an Aggregate or DCB, pin it with a Given-When-Then Scenario, following [GWT-WRITING.md](./GWT-WRITING.md). Features are opt-in per unit; the file says when to offer, and how to take a Scenario proposed by `tdd`.
+
 ### The lint gate
 
-Every write to the model ends with the **lint gate**:
+Every write, to the core model or a Feature, ends with the **lint gate**:
 
 1. Run `esdm lint -d <model dir> --format json`.
 2. **Errors** block: fix them before the conversation moves on. **Warnings** are noted for the end of the session.
