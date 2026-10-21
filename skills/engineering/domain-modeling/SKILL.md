@@ -1,6 +1,6 @@
 ---
 name: domain-modeling
-description: Build and sharpen a project's ESDM domain model. Use when discussing domain terminology, writing or editing `*.esdm.yaml` model files or Given-When-Then Scenarios, or recording or editing an ADR.
+description: Build and sharpen a project's ESDM domain model. Use when discussing domain terminology, writing or editing `*.esdm.yaml` model files, Domain Stories or Given-When-Then Scenarios, or recording or editing an ADR.
 ---
 
 # Domain Modeling
@@ -11,7 +11,10 @@ The ESDM model is the single source of truth for domain language. `docs/agents/d
 
 ## First engagement
 
-The first time this skill engages in a session, whether the conversation opens with it or another skill reaches it midway, **get your bearings**: run `esdm view -d <model dir> --with-details` for the shape, and `esdm glossary -d <model dir> <domain>/<bc>` for the language of the context you're in.
+The first time this skill engages in a session, whether the conversation opens with it or another skill reaches it midway:
+
+1. **Get your bearings.** Run `esdm view -d <model dir> --with-details` for the shape, and `esdm glossary -d <model dir> <domain>/<bc>` for the language of the context you're in.
+2. **Offer a Domain Story, once.** Before writing anything, ask whether the user wants to tell a Domain Story. If the Domain already has stories, list them by name and `pointInTime` and offer: a new story, a `to-be` story against an existing `as-is` one, or skip. On yes, follow [DOMAIN-STORY-WRITING.md](./DOMAIN-STORY-WRITING.md). A skip holds for the rest of the session: tell a story later only when the user asks for one.
 
 ## During the session
 
@@ -47,7 +50,7 @@ When an invariant or Command is settled on an Aggregate or DCB, pin it with a Gi
 
 ### The lint gate
 
-Every write, to the core model or a Feature, ends with the **lint gate**:
+Every write, to the core model, a story or a Feature, ends with the **lint gate**:
 
 1. Run `esdm lint -d <model dir> --format json`.
 2. **Errors** block: fix them before the conversation moves on. **Warnings** are noted for the end of the session.

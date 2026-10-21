@@ -12,8 +12,8 @@ has_files() {
   shift
   diff <(cd "$dir" && find . -type f ! -name .DS_Store | sed 's|^\./||' | sort) <(printf '%s\n' "$@" | sort)
 }
-check "the skill holds its upstream files, ESDM-WRITING.md and GWT-WRITING.md instead of GLOSSARY-FORMAT.md" \
-  has_files "$skill" SKILL.md ESDM-WRITING.md GWT-WRITING.md ADR-FORMAT.md agents/openai.yaml
+check "the skill holds its upstream files, its ESDM writing guides instead of GLOSSARY-FORMAT.md" \
+  has_files "$skill" SKILL.md ESDM-WRITING.md GWT-WRITING.md DOMAIN-STORY-WRITING.md ADR-FORMAT.md agents/openai.yaml
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
@@ -41,6 +41,13 @@ check "no text uses a features/ folder" no_features_folder "$skill"
 check_fails "a features/ folder is caught" \
   quietly no_features_folder "$(broken features-folder GWT-WRITING.md 'Write it to `<bc>/features/<feature-name>.esdm.yaml`.')"
 
+# no_stories_folder <dir>: no text in the skill puts stories in a stories/
+# folder; they live in their Bounded Context, or the model root, as <story-name>.story.esdm.yaml.
+no_stories_folder() { ! grep -rnF 'stories/' "$1"; }
+check "no text uses a stories/ folder" no_stories_folder "$skill"
+check_fails "a stories/ folder is caught" \
+  quietly no_stories_folder "$(broken stories-folder DOMAIN-STORY-WRITING.md 'Write it to `<model dir>/stories/<story-name>.esdm.yaml`.')"
+
 # links_resolve <dir>: every relative Markdown link in the skill's files names a file that exists.
 links_resolve() {
   local file target status=0
@@ -55,6 +62,7 @@ check "every link in the skill resolves" links_resolve "$skill"
 check_fails "a link to a missing file is caught" \
   quietly links_resolve "$(broken missing-link SKILL.md 'See [MISSING.md](MISSING.md).')"
 check "SKILL.md points to GWT-WRITING.md" grep -qF '](./GWT-WRITING.md)' "$skill/SKILL.md"
+check "SKILL.md points to DOMAIN-STORY-WRITING.md" grep -qF '](./DOMAIN-STORY-WRITING.md)' "$skill/SKILL.md"
 
 # The pinned esdm and fixture, fetched into a scratch root so the working tree's
 # .tools and .fixture stay as they are.
