@@ -60,6 +60,8 @@ check_fails "a link to a missing file is caught" \
   quietly links_resolve "$(broken missing-link SKILL.md 'See [MISSING.md](MISSING.md).')"
 check "SKILL.md points to GWT-WRITING.md" grep -qF '](./GWT-WRITING.md)' "$skill/SKILL.md"
 check "SKILL.md points to DOMAIN-STORY-WRITING.md" grep -qF '](./DOMAIN-STORY-WRITING.md)' "$skill/SKILL.md"
+check "SKILL.md has a migration-mode section" grep -qx '## Migration mode' "$skill/SKILL.md"
+check "First engagement points to the migration-mode section" grep -qF '](#migration-mode)' "$skill/SKILL.md"
 
 # The pinned esdm and fixture, fetched into a scratch root so the working tree's
 # .tools and .fixture stay as they are.
