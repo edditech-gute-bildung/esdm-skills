@@ -18,7 +18,7 @@ Features are opt-in **per unit** (Aggregate or DCB):
 ## Set up the Feature
 
 - **File:** `<bc>/features/<feature-name>.esdm.yaml`, one Feature per file. A Process Manager's Features go in `<domain>/features/`.
-- **One Feature per capability**, usually one Command or Query, named after it: `borrow-book`. Merge Features only when the user asks.
+- **One Feature per capability**, usually one Command or Query, named as a gerund phrase: `borrowing-a-book` for `borrow-book`. Merge Features only when the user asks.
 - **`scope`** names the unit. Its variant fixes the shape of every Scenario (see the schema).
 
 ## Write a Scenario, one at a time
@@ -48,7 +48,7 @@ Kebab-case, saying the behaviour, not the mechanics: `reader-with-five-loans-is-
 ```yaml
 apiVersion: schema.esdm.io/given-when-then/v1
 kind: feature
-name: borrow-book
+name: borrowing-a-book
 scope: { domain: library, boundedContext: lending, aggregate: reader-account }
 scenarios:
   - name: reader-with-five-loans-is-refused-a-sixth
@@ -77,4 +77,4 @@ A Scenario changes only when the user decides it is wrong, never to match the co
 1. Change it here, through the lint gate.
 2. `tdd` then updates the test from the changed Scenario.
 
-A **rename** is one step: rename the Scenario, then rename the test that carries its name in its `esdm:` comment.
+A **rename** is one step: rename the Scenario, then rename the test whose `esdm:` comment names it.

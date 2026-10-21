@@ -26,8 +26,8 @@ When the unit you're building has a Given-When-Then Feature (`esdm view -d <mode
 | Read Model | Projection + Query | project the Events | the Query | the result |
 
 - Expected values come **straight from the Scenario**. It is the independent source of truth the anti-patterns below ask for.
-- The **test name** is the Scenario `name`, word for word. The line above the test carries the Feature's reference and the Scenario name:
-  `// esdm:domain=library/bounded-context=lending/aggregate=reader-account/feature=borrow-book scenario=reader-with-five-loans-is-refused-a-sixth`
+- The **test name** is the Scenario `name`, word for word. The line above the test carries the Feature's `esdm:` reference, then the Scenario name (references stop at the Feature):
+  `// esdm:domain=library/bounded-context=lending/aggregate=reader-account/feature=borrowing-a-book scenario=reader-with-five-loans-is-refused-a-sixth`
 
 **A gap:** when you meet behaviour no Scenario covers, stop and propose the Scenario (given, when, then, with the values you'd assert). Call the Skill tool with "domain-modeling" to write it once the user confirms, then carry on with it as the next slice. If the user declines, test it at a confirmed seam as below.
 
