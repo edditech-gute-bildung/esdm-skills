@@ -44,5 +44,8 @@ check "the pin has a version and a SHA256 per os-arch" pins_every_os_arch
 
 check "SKILL.md points to the pin" grep -qF '](./esdm-version)' "$skill/SKILL.md"
 check "SKILL.md points to the fetch script" grep -qF '](./scripts/fetch-esdm.sh)' "$skill/SKILL.md"
+check "SKILL.md hands a hand-written GLOSSARY.md to domain-modeling's migration mode" \
+  grep -qF "\`/domain-modeling\`'s Migration mode" "$skill/SKILL.md"
+check_fails "SKILL.md no longer says setup can't migrate" grep -qF "can't migrate" "$skill/SKILL.md"
 
 finish

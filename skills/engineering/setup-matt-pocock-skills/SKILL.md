@@ -36,7 +36,7 @@ Look at the current repo to understand its starting state. Read whatever exists;
 
 Summarise what's present and what's missing. Then take the sections in order. One section, one answer, then the next.
 
-On a re-run, when `docs/agents/` already holds this skill's output, its answers stand: ask only whether the user wants to change any, then go straight to setting up the model in step 4.
+On a re-run, when `docs/agents/` already holds this skill's output, its answers stand: ask only whether the user wants to change any, then go straight to setting up the model in step 4. While `GLOSSARY.md` is still hand-written, ask Section C's migration question again, and the rest of Section C when `docs/agents/domain.md` is missing.
 
 Lead each section with the recommended answer so the user can accept it in a word. Give a one-line explainer only when the choice genuinely branches; skip the section entirely when exploration already settled it (Section B when `triage` isn't installed).
 
@@ -61,7 +61,9 @@ If it is installed, ask exactly one question:
 
 The defaults are the five canonical roles, each label string equal to its name: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. On **yes**, write them as-is. Only if the user says no, usually because their tracker already uses other names (e.g. `bug:triage` for `needs-triage`), collect the overrides so `triage` applies existing labels instead of creating duplicates.
 
-**Section C: ESDM model.** A hand-written `GLOSSARY.md` stops this section: setup can't migrate one yet. Leave the file as it is, tell the user why Section C stopped, and finish A and B. Otherwise, one question at a time:
+**Section C: ESDM model.** A hand-written `GLOSSARY.md` comes first. It stays as it is; ask whether to migrate it into the model through `/domain-modeling`'s Migration mode once the model is set up (recommended: **yes**). On no, Section C stops here: tell the user why. The engineering skills read their language only from the model and its generated `GLOSSARY.md`, and generating one would replace the hand-written file.
+
+Otherwise, one question at a time:
 
 1. **Model dir.** Propose the common root of the `*.esdm.yaml` files exploration found; with none, propose `esdm/` at the repo root. There is one model dir per repo.
 2. **esdm command.** When `esdm version` reports the pinned version (the repo's `.esdm-version`, else this skill's [esdm-version](./esdm-version)), use `esdm` from PATH without asking. When it's missing or reports another version, say which, and lead with the repo-local install:
@@ -75,7 +77,7 @@ The CI workflow isn't offered yet.
 Show the user a draft of:
 
 - The `## Agent skills` block to add to whichever of `CLAUDE.md` / `AGENTS.md` is being edited (see step 4 for selection rules)
-- The contents of `docs/agents/issue-tracker.md`, `docs/agents/domain.md`, and `docs/agents/triage-labels.md` (the last only when `triage` is installed)
+- The contents of `docs/agents/issue-tracker.md`, `docs/agents/domain.md` (unless Section C stopped), and `docs/agents/triage-labels.md` (only when `triage` is installed)
 
 Let them edit before writing.
 
@@ -109,7 +111,7 @@ The block:
 [one-line summary: the ESDM model dir and the generated `GLOSSARY.md`]. See `docs/agents/domain.md`.
 ```
 
-Include the `### Triage labels` sub-block, and write `docs/agents/triage-labels.md`, only when `triage` is installed and Section B ran. When it isn't, both are omitted.
+Include the `### Triage labels` sub-block, and write `docs/agents/triage-labels.md`, only when `triage` is installed and Section B ran. When it isn't, both are omitted. Likewise, include the `### Domain docs` sub-block, and write `docs/agents/domain.md`, unless Section C stopped.
 
 When Section B ran on GitHub or GitLab, create each configured label the tracker lacks (`gh label create` / `glab label create`).
 
@@ -119,7 +121,7 @@ Then write the docs files using the seed templates in this skill folder as a sta
 - [issue-tracker-gitlab.md](./issue-tracker-gitlab.md): GitLab issue tracker
 - [issue-tracker-local.md](./issue-tracker-local.md): local-markdown issue tracker
 - [triage-labels.md](./triage-labels.md): label mapping (only if `triage` is installed)
-- [domain.md](./domain.md): the model's consumer rules, with the model dir and esdm command filled in for the bracketed values
+- [domain.md](./domain.md): the model's consumer rules (unless Section C stopped), with the model dir and esdm command filled in for the bracketed values
 
 For "other" issue trackers, write `docs/agents/issue-tracker.md` from scratch using the user's description.
 
@@ -141,7 +143,8 @@ Then set up the model, unless Section C stopped:
 
    On a difference, show it and offer to regenerate. On yes, run `/domain-modeling`'s lint gate, which regenerates it once lint passes. When lint errors hold it back, say the glossary is still stale and why.
 6. **Lint.** Run `esdm lint -d <model dir>` and report the result; on a new model dir, "no esdm files found" just means it's still empty. Errors and warnings are `/domain-modeling`'s to fix.
+7. **Migration**, when the user chose it in Section C: hand off to `/domain-modeling`'s Migration mode. It moves the hand-written terms into the model, and its lint gate replaces the hand-written file only once lint passes. Step 5 follows once the migration session ends.
 
 ### 5. Done
 
-Tell the user the setup is complete and which engineering skills will now read from these files. With the repo-local install, collaborators run `scripts/fetch-esdm.sh` once after cloning. Mention they can edit `docs/agents/*.md` directly later, and re-run this skill to check the generated glossary is current or to switch issue trackers.
+When Section C stopped, or a migration ended with `GLOSSARY.md` still hand-written, say so and that a re-run offers the migration again. Otherwise, tell the user the setup is complete and which engineering skills will now read from these files. With the repo-local install, collaborators run `scripts/fetch-esdm.sh` once after cloning. Mention they can edit `docs/agents/*.md` directly later, and re-run this skill to check the generated glossary is current or to switch issue trackers.
