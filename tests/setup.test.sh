@@ -43,4 +43,13 @@ check "SKILL.md hands a hand-written GLOSSARY.md to domain-modeling's migration 
   grep -qF "\`/domain-modeling\`'s Migration mode" "$skill/SKILL.md"
 check_fails "SKILL.md no longer says setup can't migrate" grep -qF "can't migrate" "$skill/SKILL.md"
 
+check "SKILL.md looks for a legacy root CONTEXT.md" grep -qF '`CONTEXT.md` at the repo root' "$skill/SKILL.md"
+check "SKILL.md offers the rename only when GLOSSARY.md is absent" \
+  grep -qF 'When `CONTEXT.md` exists and `GLOSSARY.md` doesn'"'"'t, offer to rename' "$skill/SKILL.md"
+check "SKILL.md leaves CONTEXT.md alone when both exist" \
+  grep -qF 'When both exist, leave `CONTEXT.md` alone' "$skill/SKILL.md"
+check "SKILL.md re-offers the rename on a re-run" grep -qF 'offer the `CONTEXT.md` rename again' "$skill/SKILL.md"
+# Upstream's CONTEXT-MAP.md handling was rejected: the fork has no glossary map.
+check_fails "SKILL.md names no GLOSSARY-MAP.md or CONTEXT-MAP.md" grep -nE '(CONTEXT|GLOSSARY)-MAP\.md' "$skill/SKILL.md"
+
 finish
