@@ -36,7 +36,7 @@ Look at the current repo to understand its starting state. Read whatever exists;
 
 Summarise what's present and what's missing. Then take the sections in order. One section, one answer, then the next.
 
-On a re-run, when `docs/agents/` already holds this skill's output, its answers stand: ask only whether the user wants to change any, then go straight to setting up the model in step 4. While `GLOSSARY.md` is still hand-written, ask Section C's migration question again, and the rest of Section C when `docs/agents/domain.md` is missing.
+On a re-run, when `docs/agents/` already holds this skill's output, its answers stand: ask only whether the user wants to change any, then go straight to setting up the model in step 4. While `GLOSSARY.md` is still hand-written, ask Section C's migration question again, and the rest of Section C when `docs/agents/domain.md` is missing. Offer Section C's CI workflow again while the repo has none.
 
 Lead each section with the recommended answer so the user can accept it in a word. Give a one-line explainer only when the choice genuinely branches; skip the section entirely when exploration already settled it (Section B when `triage` isn't installed).
 
@@ -70,7 +70,7 @@ Otherwise, one question at a time:
    - **Repo-local** (recommended): a committed `scripts/fetch-esdm.sh` downloads the pinned binary into a gitignored `.tools/esdm`. Collaborators run it once, and CI reuses it. The command is `.tools/esdm`.
    - **On PATH**: setup downloads the pinned binary into a directory on PATH that the user picks, after an explicit yes. The command is `esdm`.
 
-The CI workflow isn't offered yet.
+3. **CI workflow.** Only when Section A chose GitHub or GitLab, and the repo has no `.github/workflows/esdm.yml` (GitHub) or `.gitlab/ci/esdm.yml` (GitLab) yet. Offer it; don't impose it (recommended: **yes**). On every push it fetches and verifies the pinned `esdm` through `scripts/fetch-esdm.sh`, runs `esdm lint -d <model dir> --warnings-as-errors`, and fails when `GLOSSARY.md` isn't generated from the current model. Until the model dir holds a model file, it checks nothing. On no, write nothing for CI: no workflow, no include, no fetch script beyond what the install needs.
 
 ### 3. Confirm and edit
 
@@ -78,6 +78,7 @@ Show the user a draft of:
 
 - The `## Agent skills` block to add to whichever of `CLAUDE.md` / `AGENTS.md` is being edited (see step 4 for selection rules)
 - The contents of `docs/agents/issue-tracker.md`, `docs/agents/domain.md` (unless Section C stopped), and `docs/agents/triage-labels.md` (only when `triage` is installed)
+- The CI workflow (only when the user said yes to it in Section C)
 
 Let them edit before writing.
 
@@ -143,8 +144,13 @@ Then set up the model, unless Section C stopped:
 
    On a difference, show it and offer to regenerate. On yes, run `/domain-modeling`'s lint gate, which regenerates it once lint passes. When lint errors hold it back, say the glossary is still stale and why.
 6. **Lint.** Run `esdm lint -d <model dir>` and report the result; on a new model dir, "no esdm files found" just means it's still empty. Errors and warnings are `/domain-modeling`'s to fix.
-7. **Migration**, when the user chose it in Section C: hand off to `/domain-modeling`'s Migration mode. It moves the hand-written terms into the model, and its lint gate replaces the hand-written file only once lint passes. Step 5 follows once the migration session ends.
+7. **CI workflow**, when the user said yes to it in Section C. Fill in the model dir for `[esdm/]` in the host's template:
+   - **GitHub:** [ci-github.yml](./ci-github.yml) becomes `.github/workflows/esdm.yml`.
+   - **GitLab:** [ci-gitlab.yml](./ci-gitlab.yml) becomes `.gitlab/ci/esdm.yml`. Add `.gitlab/ci/esdm.yml` to the `include:` list in `.gitlab-ci.yml` as a `local:` entry, creating the file with just that `include:` when it's missing. Leave the rest of an existing `.gitlab-ci.yml` as it is.
+
+   The workflow runs `scripts/fetch-esdm.sh`. With the PATH install, copy [scripts/fetch-esdm.sh](./scripts/fetch-esdm.sh) to `scripts/fetch-esdm.sh` and add `.tools/` to `.gitignore`, as the repo-local install does.
+8. **Migration**, when the user chose it in Section C: hand off to `/domain-modeling`'s Migration mode. It moves the hand-written terms into the model, and its lint gate replaces the hand-written file only once lint passes. Step 5 follows once the migration session ends.
 
 ### 5. Done
 
-When Section C stopped, or a migration ended with `GLOSSARY.md` still hand-written, say so and that a re-run offers the migration again. Otherwise, tell the user the setup is complete and which engineering skills will now read from these files. With the repo-local install, collaborators run `scripts/fetch-esdm.sh` once after cloning. Mention they can edit `docs/agents/*.md` directly later, and re-run this skill to check the generated glossary is current or to switch issue trackers.
+When Section C stopped, or a migration ended with `GLOSSARY.md` still hand-written, say so and that a re-run offers the migration again. Otherwise, tell the user the setup is complete and which engineering skills will now read from these files. With the repo-local install, collaborators run `scripts/fetch-esdm.sh` once after cloning. With the CI workflow, name its file and say it goes red on any lint warning and on a stale `GLOSSARY.md`, so also on a migration that left model files but a hand-written `GLOSSARY.md`. Mention they can edit `docs/agents/*.md` directly later, and re-run this skill to check the generated glossary is current or to switch issue trackers.

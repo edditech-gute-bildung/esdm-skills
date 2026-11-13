@@ -15,9 +15,10 @@ has_files() {
   shift
   diff <(cd "$dir" && find . -type f ! -name .DS_Store | sed 's|^\./||' | sort) <(printf '%s\n' "$@" | sort)
 }
-check "the skill holds upstream's files, plus its pin and fetch script" \
+check "the skill holds upstream's files, plus its pin, fetch script and CI templates" \
   has_files "$skill" SKILL.md domain.md issue-tracker-github.md issue-tracker-gitlab.md \
-  issue-tracker-local.md triage-labels.md agents/openai.yaml esdm-version scripts/fetch-esdm.sh
+  issue-tracker-local.md triage-labels.md agents/openai.yaml esdm-version scripts/fetch-esdm.sh \
+  ci-github.yml ci-gitlab.yml
 
 # placeholders <file>: each distinct [bracketed] value in the file.
 placeholders() { grep -oE '`[^`]*\[[^]`]+\][^`]*`' "$1" | grep -oE '\[[^]]+\]' | sort -u; }

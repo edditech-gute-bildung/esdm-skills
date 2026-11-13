@@ -1,6 +1,6 @@
 # Contributing
 
-Run `tests/run.sh` before you push. CI runs it on every push and pull request.
+Run `tests/run.sh` before you push. It needs network, `jq` and `ruby`. CI runs it on every push and pull request.
 
 ## Syncing a forked skill with upstream
 
