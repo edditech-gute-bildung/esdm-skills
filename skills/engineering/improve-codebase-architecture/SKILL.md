@@ -35,7 +35,7 @@ Read the model first. `esdm` (the command named in `docs/agents/domain.md`) give
 
 An element in the scope that you can't locate in the code is a **Model ahead of code** drift item.
 
-Then spawn a sub-agent to walk the codebase. Hand it the `esdm view` output as the intended structure, the mapping, and the [model kinds](#model-kinds-as-seam-candidates) and [findings](#findings) below. Don't follow rigid heuristics; explore organically and note where you experience friction:
+Then spawn a sub-agent with a fresh context window to walk the codebase. Hand it the `esdm view` output as the intended structure, the mapping, and the [model kinds](#model-kinds-as-seam-candidates) and [findings](#findings) below. Don't follow rigid heuristics; explore organically and note where you experience friction:
 
 - Where does understanding one concept require bouncing between many small modules?
 - Where are modules **shallow**, with an interface nearly as complex as the implementation?
