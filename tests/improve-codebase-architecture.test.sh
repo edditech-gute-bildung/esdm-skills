@@ -33,8 +33,8 @@ added() {
   echo "$work/$1"
 }
 
-# section <file> <heading>: the lines under a "## " or "### " heading, up to the
-# next heading of the same or a higher level.
+# section <file> <heading>: the lines under a Markdown heading of any level, up
+# to the next heading of the same or a higher level.
 section() {
   awk -v heading="$2" '
     /^#+ / { level = index($0, " ") - 1 }
@@ -63,15 +63,24 @@ for kind in 'Code ahead of model' 'Model ahead of code'; do
 done
 check_fails "a missing finding kind is caught" \
   finding "$(dropped no-finding "$skill_md" "$(grep -F '**Unit shattered**' "$skill_md")")" '#### Findings' 'Unit shattered'
+check_fails "a missing drift item is caught" \
+  finding "$(dropped no-drift "$skill_md" "$(grep -F '**Code ahead of model**' "$skill_md")")" '#### Findings' 'Code ahead of model'
 
 # model_wins <file>: the text says code changes to match the model, and a model
 # change goes through domain-modeling first.
 model_wins() { grep -qF '**The model wins.**' "$1"; }
 check "the text says the model wins" model_wins "$skill_md"
+check_fails "a missing model-wins rule is caught" \
+  model_wins "$(dropped no-model-wins "$skill_md" "$(grep -F '**The model wins.**' "$skill_md")")"
 
-# no_style_skill_note <file>: a style no installed skill covers is skipped, with a one-line note.
-no_style_skill_note() { section "$1" '#### Architecture style' | grep -qF 'one line'; }
+# no_style_skill_note <file>: a style no installed skill covers is skipped, with
+# a one-line note: the line that says so names installed skills and one line.
+no_style_skill_note() {
+  section "$1" '#### Architecture style' | grep -F 'installed' | grep -qF 'one line'
+}
 check "an uncovered style is skipped with a one-line note" no_style_skill_note "$skill_md"
+check_fails "a missing skip note is caught" \
+  no_style_skill_note "$(dropped no-skip-note "$skill_md" "$(grep -F 'say so in one line' "$skill_md")")"
 
 # adr_writes_delegated <dir>: every line that has an ADR recorded, written or
 # created hands the write to domain-modeling.
@@ -110,7 +119,7 @@ check_fails "a named style skill is caught" \
   quietly only_known_skills "$(added style-skill 'Call the Skill tool with "event-sourcing" to judge style.')"
 
 # no_technology <dir>: the skill names no architecture technology.
-no_technology() { ! grep -rniE 'kurrent|eventstore|rabbitmq|kafka|nats|axon|marten|postgres' "$1" --include='*.md'; }
+no_technology() { ! grep -rniwE 'kurrent(db)?|eventstore(db)?|rabbitmq|kafka|nats|axon|marten|postgres(ql)?' "$1" --include='*.md'; }
 check "the skill names no technology" no_technology "$skill"
 check_fails "a named technology is caught" quietly no_technology "$(added technology 'Prefer KurrentDB for events.')"
 
@@ -131,6 +140,8 @@ drift_before_top() {
 check "Model drift comes before Top recommendation" drift_before_top "$report_md"
 
 check "no text uses a features/ folder" no_folder features "$skill"
+check_fails "a features/ folder is caught" \
+  quietly no_folder features "$(added features-folder 'Features live in `<bc>/features/`.')"
 
 check "the pinned fixture is fetched" fetch_fixture "$work/root"
 model="$work/root/.fixture/model"

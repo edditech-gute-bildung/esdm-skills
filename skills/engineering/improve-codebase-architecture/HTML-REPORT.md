@@ -112,7 +112,7 @@ One larger card. Candidate name, one sentence on why, anchor link to its card. T
 
 ## Model drift section
 
-Before **Top recommendation**, a short list: one line per drift item, prefixed `Code ahead of model` or `Model ahead of code`, with its `esdm:` reference or file in `font-mono text-sm`. The style lines go here too. No diagrams.
+Before **Top recommendation**, a short list: one line per drift item, prefixed `Code ahead of model` or `Model ahead of code`, with its `esdm:` reference or file in `font-mono text-sm`. The style lines go here too, prefixed `Style`. No diagrams.
 
 ## Tone
 

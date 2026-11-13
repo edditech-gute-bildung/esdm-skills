@@ -12,14 +12,14 @@ This command reads the project's ESDM model as the **intended structure** and is
 
 - Call the Skill tool with "codebase-design" for the architecture vocabulary (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) and its principles (the deletion test, "the interface is the test surface", "one adapter = hypothetical seam, two = real"). Use these terms exactly in every suggestion, and don't drift into "component," "service," "API," or "boundary."
 - The ESDM model in the model dir (named in `docs/agents/domain.md`) says what the domain's parts are and how they connect; the code is compared against it. `GLOSSARY.md`, generated from the model, gives names to good seams; ADRs in `docs/adr/` record decisions this command should not re-litigate.
-- **Two vocabularies, one per side.** ESDM kind names (Bounded Context, consistency unit, Context Mapping, Policy, …) name domain things; the `codebase-design` terms name code things. A **consistency unit** is an Aggregate or a dynamic consistency boundary (DCB). "Boundary" on its own stays banned.
+- **Two vocabularies, one per side.** ESDM kind names (Bounded Context, consistency unit, Context Mapping, Policy, …) name domain things; the `codebase-design` terms name code things. A **consistency unit** is an Aggregate or a dynamic consistency boundary (DCB).
 - **The model wins.** Where code and model disagree, the code is what changes. A candidate may argue the model is wrong; if the user agrees, the model changes first, through "domain-modeling", before any decision on the code's shape.
 
 ## Process
 
 ### 1. Explore
 
-Read the model first. `esdm` (the command named in `docs/agents/domain.md`) gives its structure: `esdm view -d <model dir> --with-details`. Read `GLOSSARY.md` for its vocabulary, and any ADRs in the area you're touching.
+Read the model first. `esdm` (the command named in `docs/agents/domain.md`) gives its structure: `esdm view -d <model dir> --with-details`, and its vocabulary: `esdm glossary -d <model dir>`. Then read any ADRs in the area you're touching.
 
 **Scope before you scan: YAGNI.** Deepening a module pays off by making future changes to it easier, so put extra weight on the parts of the codebase that have recently changed. Decide *where* to look before you look:
 
@@ -33,7 +33,7 @@ Read the model first. `esdm` (the command named in `docs/agents/domain.md`) give
 - ubiquitous-language terms, where a term the model lists under `avoid` is a smell;
 - the `esdm:` comments above Scenario tests, which name a Feature and so its consistency unit.
 
-An element in the scope that you can't locate in the code is a drift item. There is no other annotation convention.
+An element in the scope that you can't locate in the code is a **Model ahead of code** drift item.
 
 Then spawn a sub-agent to walk the codebase. Hand it the `esdm view` output as the intended structure, the mapping, and the [model kinds](#model-kinds-as-seam-candidates) and [findings](#findings) below. Don't follow rigid heuristics; explore organically and note where you experience friction:
 
@@ -82,9 +82,9 @@ Model drift, one line each in its own report section:
 
 The skill judges no architecture style or technology on its own. When an ADR declares one, look among the **installed** skills for one whose description covers it, and call it to judge **Style violation** and to shape the After side of each candidate. When none covers it, skip **Style violation** and say so in one line of the report: _"ADR-0003 declares a functional core; no installed skill covers it, so style isn't judged."_
 
-A style evident in the code that no ADR declares is not judged. It becomes one drift line: _"The code decides from past Events, but no ADR records that style. Record one?"_
+A style evident in the code that no ADR declares stays unjudged and becomes one drift line: _"The code decides from past Events, but no ADR records that style. Record one?"_
 
-Propose no switch of style, and leave finding or installing skills to the user.
+Work within the declared style, and leave finding or installing skills to the user.
 
 ### 2. Present candidates as an HTML report
 
@@ -122,6 +122,6 @@ Side effects happen inline as decisions crystallize. The model, `GLOSSARY.md` an
 - **Naming a deepened module after a concept the model lacks?** `/domain-modeling` adds the term, and the element if one is needed. Code names follow the model.
 - **Sharpening a fuzzy term during the conversation?** `/domain-modeling` sharpens it in the model right there.
 - **User picks a drift item?** `/domain-modeling` settles it: model the concept, or mark the code as wrong.
-- **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing; skip ephemeral reasons ("not worth it right now") and self-evident ones. On yes, `/domain-modeling` records the ADR and links it from the elements involved.
+- **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing; skip ephemeral reasons ("not worth it right now") and self-evident ones. On yes, `/domain-modeling` records the ADR and links it from the elements involved, in their `metadata.annotations.adr`.
 - **What tests survive?** When the consistency unit has a Feature, its Scenarios are the deepened module's test surface: one Scenario per test, at the seam its variant fixes.
 - **Want to explore alternative interfaces for the deepened module?** Call the Skill tool with "codebase-design" and use its design-it-twice parallel sub-agent pattern.
