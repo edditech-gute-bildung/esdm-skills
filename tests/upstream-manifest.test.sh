@@ -50,7 +50,7 @@ matches_base() {
   diff <(upstream_file "$1" "$2") "$REPO_ROOT/$skill_path/$2"
 }
 
-for name in domain-modeling setup-matt-pocock-skills tdd to-spec; do
+for name in domain-modeling setup-matt-pocock-skills tdd to-spec improve-codebase-architecture; do
   check "upstream.json lists $name as rewrite tier" is_entry rewrite "$name"
   check "$name's agents/openai.yaml is upstream's at the base" matches_base "$name" agents/openai.yaml
 done
@@ -84,12 +84,13 @@ tdd_outside_scenarios_match() {
 }
 check "tdd's SKILL.md is upstream's at the base outside the Scenario section" tdd_outside_scenarios_match
 
-# only_added <name> <file>: <file> keeps every line of the skill's upstream
-# SKILL.md at the base, unchanged and in order; it only adds lines.
+# only_added <name> <file> [<upstream file>]: <file> keeps every line of the
+# skill's upstream file (SKILL.md unless named) at the base, unchanged and in
+# order; it only adds lines.
 only_added() {
   local upstream removed
   [ -f "$2" ] || return 1
-  upstream="$(upstream_file "$1" SKILL.md)" && [ -n "$upstream" ] || return 1
+  upstream="$(upstream_file "$1" "${3:-SKILL.md}")" && [ -n "$upstream" ] || return 1
   removed="$(diff <(printf '%s\n' "$upstream") "$2" | grep -E '^<' || true)"
   [ -z "$removed" ] || { printf '  %s\n' "$removed"; return 1; }
 }
@@ -98,5 +99,12 @@ check "to-spec's SKILL.md is upstream's at the base plus added lines" only_added
 sed 's/^1\. Explore the repo/1. Explore the codebase/' "$to_spec_md" >"$work/to-spec-changed.md" 2>/dev/null
 check_fails "a changed upstream line in to-spec is caught" \
   quietly only_added to-spec "$work/to-spec-changed.md"
+
+ica_report="$REPO_ROOT/skills/engineering/improve-codebase-architecture/HTML-REPORT.md"
+check "improve-codebase-architecture's HTML-REPORT.md is upstream's at the base plus added lines" \
+  only_added improve-codebase-architecture "$ica_report" HTML-REPORT.md
+sed 's/^## Scaffold/## The scaffold/' "$ica_report" >"$work/report-changed.md" 2>/dev/null
+check_fails "a changed upstream line in HTML-REPORT.md is caught" \
+  quietly only_added improve-codebase-architecture "$work/report-changed.md" HTML-REPORT.md
 
 finish

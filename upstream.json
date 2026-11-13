@@ -46,6 +46,11 @@
       "tier": "rewrite",
       "skillPath": "skills/engineering/to-spec",
       "base": "5beb35b040e3de97e54fa9e386d7e42d15c295c2"
+    },
+    "improve-codebase-architecture": {
+      "tier": "rewrite",
+      "skillPath": "skills/engineering/improve-codebase-architecture",
+      "base": "5beb35b040e3de97e54fa9e386d7e42d15c295c2"
     }
   }
 }

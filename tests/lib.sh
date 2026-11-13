@@ -101,6 +101,25 @@ scenario_in_model() {
   ' "$@"
 }
 
+# element_in_model <model dir> <esdm: reference>: the reference names an element
+# in the model. Its last segment is the element's kind and name; the segments
+# before it are its scope. Needs ruby.
+element_in_model() {
+  ruby -ryaml -e '
+    model, ref = ARGV
+    segments = ref.delete_prefix("esdm:").split("/").map { |segment| segment.split("=", 2) }
+    kind, name = segments.pop
+    scope = segments.to_h.transform_keys { |key| key.gsub(/-(\w)/) { $1.upcase } }
+    found = Dir.glob(File.join(model, "**", "*.esdm.yaml")).any? do |file|
+      YAML.load_stream(File.read(file)).compact.any? do |doc|
+        doc["kind"] == kind && doc["name"] == name &&
+          (doc["scope"] ? doc["scope"] == scope : scope.keys == ["domain"])
+      end
+    end
+    exit(found ? 0 : 1)
+  ' "$@"
+}
+
 finish() {
   if [ "$failures" -gt 0 ]; then
     printf '%d check(s) failed\n' "$failures"
