@@ -9,12 +9,6 @@ skill="$REPO_ROOT/skills/engineering/setup-matt-pocock-skills"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-# has_files <dir> <file...>: the dir holds exactly these files.
-has_files() {
-  local dir="$1"
-  shift
-  diff <(cd "$dir" && find . -type f ! -name .DS_Store | sed 's|^\./||' | sort) <(printf '%s\n' "$@" | sort)
-}
 check "the skill holds upstream's files, plus its pin, fetch script and CI templates" \
   has_files "$skill" SKILL.md domain.md issue-tracker-github.md issue-tracker-gitlab.md \
   issue-tracker-local.md triage-labels.md agents/openai.yaml esdm-version scripts/fetch-esdm.sh \

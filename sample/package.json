@@ -1,0 +1,8 @@
+{
+  "name": "esdm-sample-library",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}

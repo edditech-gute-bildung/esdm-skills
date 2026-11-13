@@ -50,7 +50,7 @@ matches_base() {
   diff <(upstream_file "$1" "$2") "$REPO_ROOT/$skill_path/$2"
 }
 
-for name in domain-modeling setup-matt-pocock-skills; do
+for name in domain-modeling setup-matt-pocock-skills tdd; do
   check "upstream.json lists $name as rewrite tier" is_entry rewrite "$name"
   check "$name's agents/openai.yaml is upstream's at the base" matches_base "$name" agents/openai.yaml
 done
@@ -69,5 +69,19 @@ setup_sections_match() {
     diff <(upstream_file "$setup" SKILL.md | sections_a_b) <(sections_a_b <"$ours")
 }
 check "$setup's Sections A and B are upstream's at the base" setup_sections_match
+
+for file in tests.md mocking.md; do
+  check "tdd's $file is upstream's at the base" matches_base tdd "$file"
+done
+
+# without_scenarios: a SKILL.md on stdin without its "## Scenarios: the agreed
+# slices" section, which runs up to the next "## " heading.
+without_scenarios() { awk '/^## / { skip = ($0 == "## Scenarios: the agreed slices") } !skip'; }
+tdd_outside_scenarios_match() {
+  local ours="$REPO_ROOT/skills/engineering/tdd/SKILL.md"
+  grep -qx '## Scenarios: the agreed slices' "$ours" &&
+    diff <(upstream_file tdd SKILL.md) <(without_scenarios <"$ours")
+}
+check "tdd's SKILL.md is upstream's at the base outside the Scenario section" tdd_outside_scenarios_match
 
 finish
