@@ -152,7 +152,7 @@ Then set up the model, unless Section C stopped:
    - **GitLab:** [ci-gitlab.yml](./ci-gitlab.yml) becomes `.gitlab/ci/esdm.yml`. Add `.gitlab/ci/esdm.yml` to the `include:` list in `.gitlab-ci.yml` as a `local:` entry, creating the file with just that `include:` when it's missing. Leave the rest of an existing `.gitlab-ci.yml` as it is.
 
    The workflow runs `scripts/fetch-esdm.sh`. With the PATH install, copy [scripts/fetch-esdm.sh](./scripts/fetch-esdm.sh) to `scripts/fetch-esdm.sh` and add `.tools/` to `.gitignore`, as the repo-local install does.
-8. **Migration**, when the user chose it in Section C: hand off to `/domain-modeling`'s Migration mode. It moves the hand-written terms into the model, and its lint gate replaces the hand-written file only once lint passes. Step 5 follows once the migration session ends.
+8. **Migration**, when the user chose it in Section C: run `/domain-modeling`'s Migration mode now, in this session. Invoke the `domain-modeling` skill and work its Migration mode through its last step. It moves the hand-written terms into the model, and its lint gate replaces the hand-written file only once lint passes. Done when `GLOSSARY.md` carries the generated marker, or when lint errors hold the regeneration back and you can name each one. Then run step 5 again.
 
 ### 5. Done
 

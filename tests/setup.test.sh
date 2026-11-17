@@ -41,6 +41,10 @@ check "SKILL.md points to the pin" grep -qF '](./esdm-version)' "$skill/SKILL.md
 check "SKILL.md points to the fetch script" grep -qF '](./scripts/fetch-esdm.sh)' "$skill/SKILL.md"
 check "SKILL.md hands a hand-written GLOSSARY.md to domain-modeling's migration mode" \
   grep -qF "\`/domain-modeling\`'s Migration mode" "$skill/SKILL.md"
+check "SKILL.md runs the migration within the setup session" \
+  grep -qF "run \`/domain-modeling\`'s Migration mode now, in this session" "$skill/SKILL.md"
+check "the migration step is done once GLOSSARY.md is generated" \
+  grep -qF "Done when \`GLOSSARY.md\` carries the generated marker" "$skill/SKILL.md"
 check_fails "SKILL.md no longer says setup can't migrate" grep -qF "can't migrate" "$skill/SKILL.md"
 
 check "SKILL.md looks for a legacy root CONTEXT.md" grep -qF '`CONTEXT.md` at the repo root' "$skill/SKILL.md"
