@@ -14,7 +14,7 @@ jobs:
   esdm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Fetch the pinned esdm
         run: bash scripts/fetch-esdm.sh
       # Until /domain-modeling writes the first model file, there's nothing to check.

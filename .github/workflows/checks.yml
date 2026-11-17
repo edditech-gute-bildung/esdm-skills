@@ -9,7 +9,7 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Includes the patch-tier check against the real upstream and the text
       # checks on every forked skill.
       - name: Tests

@@ -14,7 +14,7 @@ jobs:
   drift:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Exit 1 means drift, which the next step turns into issues; only 2 is an error.
       - name: Check upstream drift
         run: |
