@@ -13,7 +13,7 @@ tests/eval/run.sh improve-codebase-architecture  # the ones named
 
 Each scenario runs 3 times in a fresh scratch repo (the pinned fixture, `sample/`, the pinned `esdm`, the forks from your working tree and the companion skills pinned in `tests/eval/companions`) and passes when 2 runs pass. It needs `claude` logged in, network, `git`, `curl`, `jq`, `ruby` and `node`. Every run keeps its scratch repo, `$TMPDIR` (where reports land), `transcript.jsonl`, `result.txt` and `diff.patch`; the output prints where. Override with `EVAL_MODEL`, `EVAL_RUNS`, `EVAL_PASS`, `EVAL_MAX_TURNS`, `EVAL_MAX_BUDGET_USD` and `EVAL_OUT`.
 
-To add a scenario, write `tests/eval/<name>.eval.sh`: source `lib.sh`, define `judge <run dir>` with deterministic checks on what the run left behind, and call `run_scenario <name> <skill> [<task>]`.
+To add a scenario, write `tests/eval/<name>.eval.sh`: source `lib.sh`, define `judge <run dir>` with deterministic checks on what the run left behind, and call `run_scenario <name> <skill> [<task>]`. Set `EVAL_FIXTURE=glossary-only` before it to start from the fixture's `GLOSSARY.md` alone, hand-written, with no model, `docs/agents/domain.md` or esdm pin.
 
 ## Syncing a forked skill with upstream
 
