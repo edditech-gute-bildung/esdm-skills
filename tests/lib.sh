@@ -120,6 +120,21 @@ element_in_model() {
   ' "$@"
 }
 
+# esdm_comments <test dir>: each esdm: comment in the *.test.js files under the
+# dir, as "<file>:<line>\t<reference>\t<scenario>\t<next line>".
+esdm_comments() {
+  find "$1" -name '*.test.js' -print0 | xargs -0 awk '
+    pending { print pending "\t" $0; pending = "" }
+    match($0, /esdm:[^ ]+ scenario=[^ ]+/) {
+      split(substr($0, RSTART, RLENGTH), parts, " scenario=")
+      pending = FILENAME ":" FNR "\t" parts[1] "\t" parts[2]
+    }
+  '
+}
+
+# named_after <scenario> <line>: the line opens a test named after the Scenario.
+named_after() { grep -qF "test('$1'," <<<"$2"; }
+
 finish() {
   if [ "$failures" -gt 0 ]; then
     printf '%d check(s) failed\n' "$failures"
