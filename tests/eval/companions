@@ -1,0 +1,6 @@
+# Matt's skills the forks call but don't fork, installed into every eval's
+# scratch repo from this upstream commit. To bump them, edit the sha.
+repo: https://github.com/mattpocock/skills
+sha: 5863806dd4e15c63174bee4e7515a4256792ecfa
+skill: skills/engineering/codebase-design
+skill: skills/productivity/grilling

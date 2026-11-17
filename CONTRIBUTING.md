@@ -2,6 +2,19 @@
 
 Run `tests/run.sh` before you push. It needs network, `jq`, `ruby` and `node`. CI runs it on every push and pull request.
 
+## Running the behavioural evals
+
+`tests/run.sh` checks that the forks are well-formed; the evals in `tests/eval/` check that an agent following a fork does the right thing ([ADR-0001](docs/adr/0001-behavioural-skill-tests.md)). They run `claude -p` and cost tokens, so they never run in CI on push. Run them on demand:
+
+```sh
+tests/eval/run.sh                                # every tests/eval/*.eval.sh
+tests/eval/run.sh improve-codebase-architecture  # the ones named
+```
+
+Each scenario runs 3 times in a fresh scratch repo (the pinned fixture, `sample/`, the pinned `esdm`, the forks from your working tree and the companion skills pinned in `tests/eval/companions`) and passes when 2 runs pass. It needs `claude` logged in, network, `git`, `curl` and `jq`. Every run keeps its scratch repo, `$TMPDIR` (where reports land), `transcript.jsonl`, `result.txt` and `diff.patch`; the output prints where. Override with `EVAL_MODEL`, `EVAL_RUNS`, `EVAL_PASS`, `EVAL_MAX_TURNS`, `EVAL_MAX_BUDGET_USD` and `EVAL_OUT`.
+
+To add a scenario, write `tests/eval/<name>.eval.sh`: source `lib.sh`, define `judge <run dir>` with deterministic checks on what the run left behind, and call `run_scenario <name> <skill> [<task>]`.
+
 ## Syncing a forked skill with upstream
 
 Each forked skill records the `mattpocock/skills` commit it is based on as its `base` in `upstream.json`. Every Monday, the `upstream-drift` workflow compares each skill's whole upstream folder between its base and upstream HEAD. It keeps one open `needs-triage` issue per skill that drifted, moved or disappeared upstream. Run `scripts/upstream-drift.sh` to check by hand.

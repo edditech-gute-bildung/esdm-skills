@@ -1,0 +1,165 @@
+# Shared helpers for the behavioural evals. Source it from a *.eval.sh; don't run it.
+#
+# An eval defines judge, then calls run_scenario:
+#
+#   judge() { ... }   # judge <run dir>: 0 when the run did what the skill should
+#   run_scenario <name> <skill> [<task>]
+#
+# Each run gets a fresh scratch repo (the pinned fixture's model/ and
+# GLOSSARY.md, a copy of sample/, the pinned esdm, the forks from the working
+# tree and the companion skills from tests/eval/companions), runs
+# `claude -p "/<skill> <preamble> <task>"` in it, and keeps under <run dir>:
+#
+#   repo/              the scratch repo after the run
+#   tmp/               the run's $TMPDIR, where reports land
+#   transcript.jsonl   the stream-json transcript
+#   result.txt         the final message
+#   diff.patch         what the run changed in the repo
+#
+# Settings, from the environment:
+#   EVAL_RUNS (3) runs per scenario, EVAL_PASS (2) runs that must pass,
+#   EVAL_MODEL (claude-sonnet-5-5), EVAL_MAX_TURNS (60), EVAL_MAX_BUDGET_USD (5),
+#   EVAL_CLAUDE (claude) the command to run, EVAL_OUT where runs are kept
+#   (a fresh dir under $TMPDIR, outside this repo so its skills don't load).
+
+source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
+EVAL_REPO_ROOT="$REPO_ROOT"
+EVAL_PREAMBLE="Non-interactive run: wherever you would ask, take your recommended answer and note it."
+
+EVAL_RUNS="${EVAL_RUNS:-3}"
+EVAL_PASS="${EVAL_PASS:-2}"
+EVAL_MODEL="${EVAL_MODEL:-claude-sonnet-5-5}"
+EVAL_MAX_TURNS="${EVAL_MAX_TURNS:-60}"
+EVAL_MAX_BUDGET_USD="${EVAL_MAX_BUDGET_USD:-5}"
+EVAL_CLAUDE="${EVAL_CLAUDE:-claude}"
+if [ -z "${EVAL_OUT:-}" ]; then
+  EVAL_OUT="$(mktemp -d "${TMPDIR:-/tmp}/esdm-evals.XXXXXX")"
+fi
+EVAL_OUT="$(mkdir -p "$EVAL_OUT" && cd "$EVAL_OUT" && pwd)"
+
+# pinned_value <file> <key>: the value of the first "<key>: <value>" line.
+pinned_value() {
+  awk -v key="$2" 'index($0, key ":") == 1 { sub(/^[^:]*: */, ""); print; exit }' "$1"
+}
+
+# eval_template: builds the parts every scratch repo shares once, under
+# $EVAL_OUT/.template, and prints its path. Fetches the fixture, esdm and the
+# companion skills.
+eval_template() {
+  local template="$EVAL_OUT/.template" companions="$EVAL_REPO_ROOT/tests/eval/companions"
+  if [ -f "$template/.done" ]; then
+    echo "$template"
+    return 0
+  fi
+  rm -rf "$template"
+  mkdir -p "$template/repo/.claude/skills" "$template/repo/docs/agents" "$template/bin" || return 1
+
+  # The fixture, outside the working tree's .fixture.
+  fetch_fixture "$template/fetch" || return 1
+  cp -R "$template/fetch/.fixture/model" "$template/fetch/.fixture/GLOSSARY.md" "$template/repo/" || return 1
+
+  # The sample, without its README: that names the defects planted for the evals to find.
+  cp -R "$EVAL_REPO_ROOT/sample/." "$template/repo/" && rm "$template/repo/README.md" || return 1
+  sed -e 's|`\[esdm/\]`|`model/`|g; s|\[esdm/\]|model/|g; s/`\[esdm | \.tools\/esdm\]`/`.tools\/esdm`/' \
+    "$EVAL_REPO_ROOT/skills/engineering/setup-matt-pocock-skills/domain.md" >"$template/repo/docs/agents/domain.md" || return 1
+  cp -L "$EVAL_REPO_ROOT/.esdm-version" "$template/repo/" &&
+    ESDM_INSTALL_DIR="$template/repo/.tools" bash "$EVAL_REPO_ROOT/scripts/fetch-esdm.sh" >&2 || return 1
+  printf '.tools/\n' >"$template/repo/.gitignore"
+
+  # The forks under test, from the working tree.
+  cp -R "$EVAL_REPO_ROOT"/skills/engineering/* "$template/repo/.claude/skills/" || return 1
+
+  # The companion skills, from their pinned upstream commit.
+  local upstream sha skill_path
+  upstream="$(pinned_value "$companions" repo)"
+  sha="$(pinned_value "$companions" sha)"
+  git init --quiet "$template/upstream" &&
+    git -C "$template/upstream" fetch --quiet --depth 1 "$upstream" "$sha" || return 1
+  while IFS= read -r skill_path; do
+    mkdir -p "$template/companion" &&
+      git -C "$template/upstream" archive "$sha" "$skill_path" | tar -x -C "$template/companion" &&
+      cp -R "$template/companion/$skill_path" "$template/repo/.claude/skills/" || return 1
+  done < <(awk '/^skill:/ { sub(/^skill: */, ""); print }' "$companions")
+
+  # Reports get opened for the user; a run has none, so opening does nothing.
+  local opener
+  for opener in open xdg-open; do
+    printf '#!/bin/sh\nexit 0\n' >"$template/bin/$opener" && chmod +x "$template/bin/$opener"
+  done
+
+  touch "$template/.done"
+  echo "$template"
+}
+
+# eval_run <run dir> <prompt>: one run in a fresh scratch repo under <run dir>.
+eval_run() {
+  local run_dir="$1" prompt="$2" template
+  template="$(eval_template)" || return 1
+  rm -rf "$run_dir"
+  mkdir -p "$run_dir/tmp" || return 1
+  cp -R "$template/repo" "$run_dir/repo" || return 1
+  (
+    cd "$run_dir/repo" &&
+      git init --quiet &&
+      git add -A &&
+      git -c user.name=eval -c user.email=eval@example.invalid commit --quiet -m fixture
+  ) || return 1
+
+  (
+    cd "$run_dir/repo" &&
+      PATH="$template/bin:$PATH" TMPDIR="$run_dir/tmp" "$EVAL_CLAUDE" -p "$prompt" \
+        --model "$EVAL_MODEL" \
+        --permission-mode bypassPermissions \
+        --output-format stream-json --verbose \
+        --max-turns "$EVAL_MAX_TURNS" \
+        --max-budget-usd "$EVAL_MAX_BUDGET_USD" \
+        --setting-sources project,local \
+        --no-session-persistence \
+        </dev/null >"$run_dir/transcript.jsonl" 2>"$run_dir/stderr.log"
+  )
+  local status=$?
+
+  jq -rs '[.[] | select(.type == "result")] | last | .result // empty' "$run_dir/transcript.jsonl" \
+    >"$run_dir/result.txt" 2>/dev/null
+  (cd "$run_dir/repo" && git add -A && git diff --cached HEAD) >"$run_dir/diff.patch"
+  return "$status"
+}
+
+# run_scenario <name> <skill> [<task>]: runs the scenario EVAL_RUNS times,
+# judges each run with judge <run dir>, and passes when EVAL_PASS runs pass.
+run_scenario() {
+  local name="$1" skill="$2" task="${3:-}" prompt run run_dir passed=0
+  prompt="/$skill $EVAL_PREAMBLE${task:+ $task}"
+  echo "$name: $EVAL_RUNS runs, $EVAL_PASS must pass, kept in $EVAL_OUT/$name"
+  for run in $(seq 1 "$EVAL_RUNS"); do
+    run_dir="$EVAL_OUT/$name/run-$run"
+    if ! eval_run "$run_dir" "$prompt"; then
+      echo "  run $run: claude exited non-zero, see $run_dir/stderr.log"
+    fi
+    if judge "$run_dir"; then
+      echo "run $run: PASS ($run_dir)"
+      passed=$((passed + 1))
+    else
+      echo "run $run: FAIL ($run_dir)"
+    fi
+  done
+  if [ "$passed" -ge "$EVAL_PASS" ]; then
+    echo "$name: PASS ($passed/$EVAL_RUNS)"
+  else
+    echo "$name: FAIL ($passed/$EVAL_RUNS)"
+    return 1
+  fi
+}
+
+# report_text <run dir>: the run's final message and every HTML report it wrote.
+report_text() {
+  cat "$1/result.txt" 2>/dev/null
+  find "$1/tmp" -name '*.html' -exec cat {} + 2>/dev/null
+}
+
+# expect <description> <command...>: prints the check and passes its status on.
+expect() {
+  local description="$1"
+  shift
+  if "$@"; then echo "  ok   $description"; else echo "  FAIL $description"; return 1; fi
+}
