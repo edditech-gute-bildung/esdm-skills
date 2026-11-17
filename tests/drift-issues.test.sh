@@ -66,7 +66,7 @@ report() {
         gone: "upstream skills/engineering/demo no longer exists at bbbbbbb",
         ok: null
       }[$status],
-      files: [$ARGS.positional | _nwise(2) | {status: .[0], path: .[1]}]},
+      files: [$ARGS.positional as $p | range(0; $p | length; 2) | {status: $p[.], path: $p[. + 1]}]},
      {skill: "other", skillPath: "skills/engineering/other", headPath: "skills/engineering/other",
       base: ("a" * 40), head: ("a" * 40), status: "ok", files: []}]' "$@" >"$file"
 }
